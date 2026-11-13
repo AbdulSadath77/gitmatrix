@@ -4,6 +4,8 @@
 
 **Flexible, self-hosted SVG tiles for GitHub profile READMEs.**
 
+### [→ Browse the components](https://abdulsadath77.github.io/gitmatrix/)
+
 Zero runtime dependencies · no build step · every token customizable
 
 </div>
@@ -197,6 +199,24 @@ on a spike series with data bounded to `[10, 100]`:
 inside the data range at every smoothing level, so a regression here fails the
 suite rather than quietly shipping a chart that bleeds under its own axis.
 
+## Gallery
+
+The public component gallery is generated from the tile registry, so the
+published docs cannot drift from the code — the component list, every options
+table, and every copy-paste snippet are read from `lib/tiles/index.js`.
+
+```bash
+node bin/gallery.mjs          # live data for the configured user
+node bin/gallery.mjs --demo   # synthetic data, no network
+node bin/gallery.mjs --out public
+```
+
+The **Build tiles** workflow publishes it to the `gh-pages` branch. Enable
+Pages on that branch once (Settings → Pages → Source: `gh-pages`) and it stays
+current on every run. Because the page is generated from the registry, a broken
+tile fails the gallery build — so publishing doubles as a check on every
+component.
+
 ## Adding a tile
 
 Three steps, no routing changes — `api/[tile].js` and the registry handle
@@ -245,6 +265,7 @@ function, the declared `data` has a fetcher, and options are documented.
 
 ```
 bin/build.mjs       static build -> dist/*.svg for CDN delivery
+bin/gallery.mjs     public gallery -> site/index.html, from the registry
 gitmatrix.json      which tiles to render statically
 lib/curve.js        monotone cubic spline -> SVG path
 lib/theme.js        presets + per-token override resolution
