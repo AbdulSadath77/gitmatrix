@@ -7,6 +7,7 @@ import { THEMES, resolveTheme } from './lib/theme.js';
 import { bool, esc, hexColor, int, isUser, num, text } from './lib/validate.js';
 import { TILES, slugs } from './lib/tiles/index.js';
 import { FETCHERS, flattenCalendar } from './lib/github.js';
+import { parseContributionsHtml } from './lib/contributions.js';
 import { render as activity } from './lib/tiles/activity.js';
 
 /** Walk an SVG path, sampling each cubic so the real curve can be inspected. */
@@ -193,6 +194,48 @@ assert.deepEqual(
   }),
   [{ date: '2026-01-01', count: 2 }, { date: '2026-01-02', count: 5 }],
 );
+
+// ======================================================================
+// Token-free contribution parsing
+// ======================================================================
+// Fixture mirrors the real markup: attribute order varies, a padding cell
+// carries no date, counts live in tool-tips joined by id, and the grid is laid
+// out one row per weekday so cell order is not date order.
+const FIXTURE = `
+<td tabindex="0" data-ix="0" data-date="2026-01-04" id="cdc-0-0" data-level="1"
+  role="gridcell" class="ContributionCalendar-day"></td>
+<td tabindex="0" data-ix="1" data-date="2026-01-11" id="cdc-0-1" data-level="0"
+  role="gridcell" class="ContributionCalendar-day"></td>
+<td id="cdc-1-0" data-level="3" data-date="2026-01-05" class="ContributionCalendar-day"></td>
+<td data-level="0" role="gridcell" class="ContributionCalendar-day"></td>
+<tool-tip id="t1" for="cdc-0-0" class="sr-only">1 contribution on January 4th.</tool-tip>
+<tool-tip id="t2" for="cdc-0-1" class="sr-only">No contributions on January 11th.</tool-tip>
+<tool-tip id="t3" for="cdc-1-0" class="sr-only">1,024 contributions on January 5th.</tool-tip>
+<tool-tip id="t4" for="not-a-day-cell" class="sr-only">99 contributions on March 1st.</tool-tip>
+`;
+const parsed = parseContributionsHtml(FIXTURE);
+assert.deepEqual(parsed, [
+  { date: '2026-01-04', count: 1 },
+  { date: '2026-01-05', count: 1024 },
+  { date: '2026-01-11', count: 0 },
+], 'parsed days must be date-sorted, comma-aware, and skip padding + stray tooltips');
+
+// A markup change must fail loudly, not yield a plausible empty year.
+assert.throws(() => parseContributionsHtml('<html><body>nothing</body></html>'),
+  /markup may have changed/, 'no day cells must throw');
+assert.throws(() => parseContributionsHtml(
+  '<td data-date="2026-01-04" id="x" class="ContributionCalendar-day"></td>'),
+  /no tooltip counts/, 'day cells with no tooltips must throw');
+
+// A day cell whose tooltip is missing defaults to 0 rather than undefined.
+const partial = parseContributionsHtml(
+  '<td data-date="2026-02-01" id="a" class="ContributionCalendar-day"></td>' +
+  '<td data-date="2026-02-02" id="b" class="ContributionCalendar-day"></td>' +
+  '<tool-tip for="a">4 contributions on February 1st.</tool-tip>');
+assert.deepEqual(partial, [
+  { date: '2026-02-01', count: 4 },
+  { date: '2026-02-02', count: 0 },
+]);
 
 // ======================================================================
 // Static build config

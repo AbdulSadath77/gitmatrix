@@ -26,11 +26,11 @@ jobs:
       - run: node test.mjs
 
       - name: Render tiles
+        # No token needed: the public /users/<login>/contributions endpoint is
+        # read instead, which is the same source Platane/snk uses. Set a
+        # TILES_TOKEN secret only if you would rather go through the GraphQL
+        # API, which cannot be reshaped by a GitHub frontend change.
         env:
-          # A classic PAT, scope-less is enough -- contribution data is public.
-          # The automatic secrets.GITHUB_TOKEN is a repo-scoped installation
-          # token and is not reliable for the user-level GraphQL query this
-          # needs, so use your own secret here.
           GITHUB_TOKEN: ${{ secrets.TILES_TOKEN }}
         run: node bin/build.mjs
 

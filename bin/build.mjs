@@ -60,11 +60,9 @@ async function main() {
     process.exit(1);
   }
 
+  // Optional. Without it the public HTML calendar is parsed instead, so this
+  // runs in CI with no secrets configured.
   const token = process.env.GITHUB_TOKEN;
-  if (!demo && !token) {
-    console.error('GITHUB_TOKEN is not set (or pass --demo for synthetic data)');
-    process.exit(1);
-  }
 
   // Tiles sharing a data source share one fetch.
   const cache = new Map();

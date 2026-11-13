@@ -54,11 +54,16 @@ is nothing to render per-request. A scheduled Action renders the SVGs, commits
 them to a `tiles` branch, and a CDN serves them. **No server, no quota, no
 `402` — structurally.**
 
-Setup:
+Setup — **no secrets required**:
 
-1. Add a `TILES_TOKEN` secret — a classic PAT, scope-less is fine.
-2. Edit `gitmatrix.json` to list the tiles you want.
-3. Run the **Build tiles** workflow.
+1. Edit `gitmatrix.json` to list the tiles you want.
+2. Run the **Build tiles** workflow.
+
+Contribution data comes from the public `github.com/users/<login>/contributions`
+endpoint, the same source `Platane/snk` reads — which is why a snake workflow
+runs with nothing configured. Set a `TILES_TOKEN` secret only if you would
+rather go through the GraphQL API, which cannot be reshaped by a GitHub
+frontend change.
 
 Then embed from whichever CDN you prefer. All three serve `image/svg+xml`
 correctly (measured):
@@ -81,7 +86,8 @@ if you would rather not depend on jsDelivr at all.
 ### Vercel function — only if others will use it
 
 Needed when you want `?username=anyone` resolved on demand. Import the repo to
-Vercel and set `GITHUB_TOKEN`.
+Vercel — no environment variables required. Set `GITHUB_TOKEN` only to opt into
+the GraphQL API.
 
 ```markdown
 <img src="https://YOUR-APP.vercel.app/api/activity?username=YOUR_NAME" width="100%" />
@@ -98,7 +104,7 @@ funding other people's profile images.
 node bin/build.mjs                  # uses ./gitmatrix.json
 node bin/build.mjs --config x.json
 node bin/build.mjs --out public
-node bin/build.mjs --demo           # synthetic data, no token
+node bin/build.mjs --demo           # synthetic data, no network
 ```
 
 Each entry in `gitmatrix.json` takes exactly the query params the HTTP API
@@ -245,7 +251,8 @@ lib/theme.js        presets + per-token override resolution
 lib/validate.js     trust boundary: every query param passes through here
 lib/svg.js          shared chrome (frame, title, footer)
 lib/tiles/          one file per tile, pure render functions
-lib/github.js       GraphQL fetchers, keyed by tile.data
+lib/github.js       data sources, keyed by tile.data
+lib/contributions.js  token-free parser for the public calendar HTML
 api/[tile].js       single dynamic route for every tile
 test.mjs            assert-based suite, no framework
 .github/workflows/  nightly render -> tiles branch -> CDN purge

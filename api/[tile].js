@@ -19,14 +19,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) {
-    res.status(500).json({ error: 'GITHUB_TOKEN env var is not set' });
-    return;
-  }
-
   try {
-    const data = await FETCHERS[tile.data](q.username, token);
+    // GITHUB_TOKEN is optional. With one, the GraphQL API is used; without, the
+    // public HTML calendar is parsed. So this deploys with no env vars at all.
+    const data = await FETCHERS[tile.data](q.username, process.env.GITHUB_TOKEN);
     const svg = tile.render(data, resolveTheme(q), q);
 
     // Shared-cache for 2h by default (clamped 5m-24h). Vercel's edge and
