@@ -1,0 +1,61 @@
+name: Build tiles
+
+on:
+  schedule:
+    # Daily at 02:00 UTC. Contribution data changes at most once a day, so
+    # there is nothing to gain from running more often.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # No install step: gitmatrix has no runtime dependencies.
+      - run: node test.mjs
+
+      - name: Render tiles
+        env:
+          # A classic PAT, scope-less is enough -- contribution data is public.
+          # The automatic secrets.GITHUB_TOKEN is a repo-scoped installation
+          # token and is not reliable for the user-level GraphQL query this
+          # needs, so use your own secret here.
+          GITHUB_TOKEN: ${{ secrets.TILES_TOKEN }}
+        run: node bin/build.mjs
+
+      - name: Publish dist to the tiles branch
+        run: |
+          set -euo pipefail
+          cd dist
+          # Force-push a single-commit orphan branch. The rendered SVGs are
+          # derived artifacts, so keeping their history would grow the repo
+          # every day for no benefit.
+          git init -q -b tiles
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "tiles: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push -f \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            tiles
+
+      - name: Purge the jsDelivr cache
+        # jsDelivr holds branch URLs for 12h; this makes the new render live
+        # immediately. Best-effort -- a failure here must not fail the build.
+        continue-on-error: true
+        run: |
+          for f in $(cd dist && ls *.svg); do
+            curl -sS -o /dev/null -w "purge %{http_code} $f\n" \
+              "https://purge.jsdelivr.net/gh/${{ github.repository }}@tiles/$f" || true
+          done

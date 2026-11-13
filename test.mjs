@@ -1,7 +1,7 @@
 // Self-check. No framework, no network, no token: `node test.mjs`
 // `node test.mjs --write` also emits demo SVGs for eyeballing.
 import assert from 'node:assert/strict';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { curvePath, monotoneTangents } from './lib/curve.js';
 import { THEMES, resolveTheme } from './lib/theme.js';
 import { bool, esc, hexColor, int, isUser, num, text } from './lib/validate.js';
@@ -193,6 +193,26 @@ assert.deepEqual(
   }),
   [{ date: '2026-01-01', count: 2 }, { date: '2026-01-02', count: 5 }],
 );
+
+// ======================================================================
+// Static build config
+// ======================================================================
+// A typo here would otherwise only surface when the nightly Action fails.
+const config = JSON.parse(readFileSync(new URL('./gitmatrix.json', import.meta.url), 'utf8'));
+assert.ok(config.username, 'gitmatrix.json needs a username');
+assert.ok(Array.isArray(config.tiles) && config.tiles.length, 'gitmatrix.json lists no tiles');
+const files = new Set();
+for (const [i, entry] of config.tiles.entries()) {
+  assert.ok(TILES[entry.tile], `gitmatrix.json tiles[${i}]: unknown tile "${entry.tile}"`);
+  const file = entry.file ?? `${entry.tile}.svg`;
+  assert.ok(file.endsWith('.svg'), `tiles[${i}]: "${file}" should end in .svg`);
+  assert.ok(!files.has(file), `tiles[${i}]: duplicate output file "${file}"`);
+  files.add(file);
+  // Render it for real, so a bad option combination fails here.
+  const out = TILES[entry.tile].render(year, resolveTheme(entry), entry);
+  assert.ok(out.startsWith('<svg'), `tiles[${i}]: did not render an SVG`);
+  assert.ok(!/NaN|Infinity|undefined/.test(out), `tiles[${i}]: rendered NaN/Infinity/undefined`);
+}
 
 if (process.argv.includes('--write')) {
   const wave = Array.from({ length: 180 }, (_, i) => ({

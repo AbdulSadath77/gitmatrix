@@ -1,0 +1,25 @@
+{
+  "username": "AbdulSadath77",
+  "out": "dist",
+  "tiles": [
+    {
+      "tile": "activity",
+      "file": "activity.svg",
+      "theme": "matrix",
+      "title": "◈ COMMIT FREQUENCY OVER TIME ◈",
+      "width": 900,
+      "height": 320,
+      "smoothing": 1
+    },
+    {
+      "tile": "activity",
+      "file": "activity-30d.svg",
+      "theme": "matrix",
+      "title": "◈ LAST 30 DAYS ◈",
+      "days": 30,
+      "width": 900,
+      "height": 240,
+      "points": true
+    }
+  ]
+}
