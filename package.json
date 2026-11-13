@@ -1,0 +1,13 @@
+{
+  "name": "gitmatrix",
+  "version": "0.1.0",
+  "description": "Flexible, self-hosted SVG tiles for GitHub profile READMEs. Zero runtime dependencies.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["github-profile", "readme", "svg", "tiles", "dashboard"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node test.mjs",
+    "demo": "node test.mjs --write"
+  }
+}
