@@ -10,7 +10,7 @@
 //   node bin/gallery.mjs --demo        # synthetic data, no network
 //   node bin/gallery.mjs --out public
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { FETCHERS } from '../lib/github.js';
 import { THEMES, resolveTheme } from '../lib/theme.js';
@@ -110,7 +110,8 @@ const CSS = `
 body{margin:0;background:var(--bg);color:#E6EDF3;
   font:15px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .wrap{max-width:980px;margin:0 auto;padding:0 20px 80px}
-header{border-bottom:1px solid var(--line);padding:56px 0 32px;margin-bottom:8px}
+header{border-bottom:1px solid var(--line);padding:40px 0 32px;margin-bottom:8px}
+.cover{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
 h1{margin:0;font-size:38px;letter-spacing:-.5px;color:var(--fg)}
 .tag{color:var(--dim);margin:10px 0 0}
 .badges{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
@@ -167,6 +168,15 @@ async function main() {
   const sections = keys.map((k) => section(k, TILES[k], data)).join('\n\n');
   const navLinks = keys.map((k) => `<a href="#${esc(k)}">${esc(k)}</a>`).join('\n    ');
 
+  // Inline the cover so the page still makes no external requests. Falls back
+  // to plain type if the asset is missing, rather than failing the build.
+  let cover;
+  try {
+    cover = `<div class="cover">${inline(await readFile(resolve('assets/cover.svg'), 'utf8'))}</div>`;
+  } catch {
+    cover = '<h1>gitmatrix</h1>\n  <p class="tag">Self-hosted SVG tiles for GitHub profile READMEs.</p>';
+  }
+
   const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -181,8 +191,7 @@ async function main() {
 <body>
 <div class="wrap">
 <header>
-  <h1>gitmatrix</h1>
-  <p class="tag">Flexible, self-hosted SVG tiles for GitHub profile READMEs.</p>
+  ${cover}
   <div class="badges">
     <span class="badge">${keys.length} component${keys.length === 1 ? '' : 's'}</span>
     <span class="badge">${Object.keys(THEMES).length} themes</span>

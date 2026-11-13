@@ -8,7 +8,7 @@ import { bool, esc, hexColor, int, isUser, num, text } from './lib/validate.js';
 import { TILES, slugs } from './lib/tiles/index.js';
 import { FETCHERS, flattenCalendar } from './lib/github.js';
 import { parseContributionsHtml } from './lib/contributions.js';
-import { render as activity } from './lib/tiles/activity.js';
+import { render as activity, groupSeries } from './lib/tiles/activity.js';
 
 /** Walk an SVG path, sampling each cubic so the real curve can be inspected. */
 function samplePath(d, steps = 16) {
@@ -150,7 +150,7 @@ const year = Array.from({ length: 365 }, (_, i) => ({
 
 const svg = activity(year, theme, { title: '◈ COMMIT FREQUENCY OVER TIME ◈' });
 assert.ok(svg.startsWith('<svg') && svg.includes('</svg>'), 'must be an SVG document');
-assert.ok(svg.includes('365 DAYS'), 'footer reports the window');
+assert.ok(svg.includes('53 WEEKS'), 'footer reports the window and unit');
 assert.ok(!/NaN|Infinity|undefined/.test(svg), 'no NaN/Infinity/undefined in output');
 
 // Title is escaped exactly once -- double-escaping would render "&amp;lt;".
@@ -168,10 +168,77 @@ assert.equal(monthYs.size, 1, 'month labels share one baseline');
 assert.equal(monthYs.has(svg.match(/y="([\d.]+)"[^>]*>\d+ CONTRIBUTIONS/)[1]), false,
   'footer must not sit on the month baseline');
 
+// ======================================================================
+// Grouping
+// ======================================================================
+// The invariant that matters: grouping changes resolution, never the total.
+const yearTotal = year.reduce((a, d) => a + d.count, 0);
+for (const mode of ['day', 'week', 'month']) {
+  const g = groupSeries(year, mode);
+  assert.equal(g.reduce((a, d) => a + d.count, 0), yearTotal,
+    `group=${mode} must preserve the total`);
+  assert.ok(g.every((d, i) => i === 0 || g[i - 1].date < d.date),
+    `group=${mode} must be strictly date-ordered`);
+}
+assert.equal(groupSeries(year, 'day').length, 365, 'day is a passthrough');
+assert.equal(groupSeries(year, 'week').length, 53, '365 days spans 53 Sunday-started weeks');
+assert.equal(groupSeries(year, 'month').length, 12, '365 days spans 12 months');
+assert.deepEqual(groupSeries([], 'week'), [], 'empty input stays empty');
+
+// Week buckets start on Sunday, matching GitHub's calendar.
+for (const d of groupSeries(year, 'week')) {
+  assert.equal(new Date(`${d.date}T00:00:00Z`).getUTCDay(), 0,
+    `week bucket ${d.date} must start on a Sunday`);
+}
+// Month buckets start on the 1st.
+for (const d of groupSeries(year, 'month')) {
+  assert.ok(d.date.endsWith('-01'), `month bucket ${d.date} must start on the 1st`);
+}
+// Known arithmetic, not just invariants.
+assert.deepEqual(
+  groupSeries([
+    { date: '2026-01-04', count: 1 }, // Sunday
+    { date: '2026-01-05', count: 2 },
+    { date: '2026-01-10', count: 4 }, // same week (Sat)
+    { date: '2026-01-11', count: 8 }, // next Sunday
+    { date: '2026-02-02', count: 16 },
+  ], 'week'),
+  [
+    { date: '2026-01-04', count: 7 },
+    { date: '2026-01-11', count: 8 },
+    { date: '2026-02-01', count: 16 },
+  ],
+);
+assert.deepEqual(
+  groupSeries([
+    { date: '2026-01-04', count: 1 },
+    { date: '2026-01-31', count: 2 },
+    { date: '2026-02-02', count: 4 },
+  ], 'month'),
+  [{ date: '2026-01-01', count: 3 }, { date: '2026-02-01', count: 4 }],
+);
+
+// Default is weekly, and the footer names the unit.
+assert.ok(activity(year, theme, {}).includes('53 WEEKS'), 'default grouping is weekly');
+assert.ok(activity(year, theme, { group: 'day' }).includes('365 DAYS'));
+assert.ok(activity(year, theme, { group: 'month' }).includes('12 MONTHS'));
+assert.ok(activity(year, theme, { group: 'nonsense' }).includes('53 WEEKS'),
+  'unknown group falls back to weekly');
+// Weekly must yield far fewer, more widely spaced points than daily -- the
+// whole reason grouping exists.
+assert.ok(
+  activity(year, theme, { group: 'week' }).match(/ C/g).length <
+    activity(year, theme, { group: 'day' }).match(/ C/g).length / 5,
+  'weekly must produce many fewer curve segments than daily',
+);
+
 // Option plumbing.
 assert.ok(activity(year, theme, { width: '1200' }).includes('width="1200"'));
 assert.ok(activity(year, theme, { width: '99999' }).includes('width="1600"'), 'width clamped');
-assert.ok(activity(year, theme, { days: '30' }).includes('30 DAYS'), 'days window applied');
+assert.ok(activity(year, theme, { days: '30', group: 'day' }).includes('30 DAYS'),
+  'days window is applied before grouping');
+assert.ok(activity(year, theme, { days: '28', group: 'week' }).match(/[45] WEEKS/),
+  'a 28-day window buckets into 4-5 Sunday-started weeks');
 assert.ok(!activity(year, theme, { fill: 'false' }).includes(theme.area), 'fill=false drops the area');
 assert.ok(!activity(year, theme, { border: 'false' }).includes('stroke-opacity="0.25"'), 'border=false drops the frame');
 assert.ok(activity(year, theme, { points: 'true' }).includes('<circle'), 'points=true draws markers');
