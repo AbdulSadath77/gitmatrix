@@ -4,8 +4,6 @@
 
 ### [Components](https://abdulsadath77.github.io/gitmatrix/) · [Documentation](https://abdulsadath77.github.io/gitmatrix/docs/)
 
-Zero runtime dependencies · no build step · every token customizable
-
 </div>
 
 ---
