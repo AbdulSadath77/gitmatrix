@@ -5,23 +5,34 @@
     {
       "tile": "activity",
       "file": "activity.svg",
-      "theme": "matrix",
       "title": "◈ COMMIT FREQUENCY OVER TIME ◈",
       "group": "week",
       "width": 900,
-      "height": 320,
-      "smoothing": 1
+      "height": 320
     },
     {
-      "tile": "activity",
-      "file": "activity-30d.svg",
-      "theme": "matrix",
-      "title": "◈ LAST 30 DAYS ◈",
-      "days": 30,
-      "group": "day",
-      "width": 900,
-      "height": 240,
-      "points": true
+      "tile": "calendar",
+      "file": "calendar.svg",
+      "title": "◈ CONTRIBUTION MATRIX ◈"
+    },
+    {
+      "tile": "streak",
+      "file": "streak.svg",
+      "title": "◈ STREAK MATRIX ◈",
+      "width": 900
+    },
+    {
+      "tile": "languages",
+      "file": "languages.svg",
+      "title": "◈ LANGUAGE DISTRIBUTION ◈",
+      "width": 440,
+      "top": 6
+    },
+    {
+      "tile": "stats",
+      "file": "stats.svg",
+      "title": "◈ DEEP SCAN ◈",
+      "width": 440
     }
   ]
 }

@@ -125,7 +125,24 @@ Tiles declaring the same `data` source share a single fetch. The suite renders
 every config entry, so a bad tile name or option combination fails `node
 test.mjs` rather than the nightly build.
 
-## Tiles
+## Components
+
+| Tile | Shows | Data | Replaces |
+|---|---|---|---|
+| [`activity`](#apiactivity) | contributions as a smooth area + line chart | calendar | `github-readme-activity-graph` (402) |
+| [`calendar`](#apicalendar) | the contribution grid, one column per week | calendar | `ghchart.rshah.org` |
+| [`streak`](#apistreak) | total, current streak, longest streak | calendar | `github-readme-streak-stats` |
+| [`languages`](#apilanguages) | language split as a stacked bar | profile | `top-langs` (503) |
+| [`stats`](#apistats) | repos, stars, forks, followers, account age | profile | `github-readme-stats` (503) |
+
+Two data sources, both unauthenticated: `calendar` reads the public
+contributions page, `profile` makes two REST calls. Tiles sharing a source
+share one fetch, so the full set above costs three requests against a 60/hr
+unauthenticated budget.
+
+Every tile also accepts `theme`, `color`, `bg`, `area`, `border`, `muted`,
+`title`, `border`, `radius` and `width`. Out-of-range values clamp; unparseable
+ones fall back to the default.
 
 ### `/api/activity`
 
@@ -150,6 +167,51 @@ Daily contributions as a smooth area + line chart.
 
 Out-of-range values clamp to the nearest bound; unparseable values fall back to
 the default. A bad query degrades to a working tile rather than an error.
+
+### `/api/calendar`
+
+The contribution grid. Sized from its own content, so it never clips or leaves
+dead space.
+
+| Option | Range | Default |
+|---|---|---|
+| `cell` | `6`-`20` px square | `11` |
+| `gap` | `1`-`6` px | `3` |
+| `levels` | `3`-`6` shade steps | `5` |
+| `labels` | boolean, month + weekday labels | `true` |
+
+Shade thresholds are quantiles of the non-zero days, not fixed counts, so the
+grid stays readable whether a peak day is 3 commits or 300.
+
+### `/api/streak`
+
+| Option | Range | Default |
+|---|---|---|
+| `width` | `320`-`1600` | `760` |
+| `height` | `160`-`800` | `240` |
+
+A zero on the current day does not break the streak — the day is not over yet,
+so it is skipped rather than counted as a miss.
+
+### `/api/languages`
+
+| Option | Range | Default |
+|---|---|---|
+| `top` | `3`-`12` languages listed | `6` |
+| `forks` | boolean, include forked repos | `false` |
+
+Counts repositories per language, not bytes. Byte-accurate shares need one
+request per repo or a token; see the note in `lib/tiles/languages.js`.
+
+### `/api/stats`
+
+| Option | Range | Default |
+|---|---|---|
+| `forks` | boolean, count forks as your own | `false` |
+
+Forks are excluded by default. Including them is why third-party cards disagree
+about repo counts — for this account one says 57 and another 28, because one
+counts all 59 public repos and the other only the 29 originals.
 
 ## Theming
 
@@ -279,6 +341,12 @@ lib/theme.js        presets + per-token override resolution
 lib/validate.js     trust boundary: every query param passes through here
 lib/svg.js          shared chrome (frame, title, footer)
 lib/tiles/          one file per tile, pure render functions
+  activity.js       smooth area + line chart
+  calendar.js       contribution grid
+  streak.js         total / current / longest
+  languages.js      stacked language bar
+  stats.js          profile aggregates
+  index.js          the registry every entry point reads
 lib/github.js       data sources, keyed by tile.data
 lib/contributions.js  token-free parser for the public calendar HTML
 api/[tile].js       single dynamic route for every tile

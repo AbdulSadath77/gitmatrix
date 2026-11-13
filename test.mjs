@@ -9,6 +9,10 @@ import { TILES, slugs } from './lib/tiles/index.js';
 import { FETCHERS, flattenCalendar } from './lib/github.js';
 import { parseContributionsHtml } from './lib/contributions.js';
 import { render as activity, groupSeries } from './lib/tiles/activity.js';
+import { computeStreaks } from './lib/tiles/streak.js';
+import { render as calendarTile, levelsFor } from './lib/tiles/calendar.js';
+import { render as languagesTile, countLanguages } from './lib/tiles/languages.js';
+import { render as statsTile, summarise } from './lib/tiles/stats.js';
 
 /** Walk an SVG path, sampling each cubic so the real curve can be inspected. */
 function samplePath(d, steps = 16) {
@@ -305,6 +309,116 @@ assert.deepEqual(partial, [
 ]);
 
 // ======================================================================
+// streak
+// ======================================================================
+const mk = (counts, from = '2026-01-01') => counts.map((count, i) => ({
+  date: new Date(Date.UTC(2026, 0, 1 + i + (from === '2026-01-01' ? 0 : 0))).toISOString().slice(0, 10),
+  count,
+}));
+
+assert.deepEqual(computeStreaks(mk([1, 1, 1, 0, 1, 1])), {
+  total: 5,
+  longest: { len: 3, start: '2026-01-01', end: '2026-01-03' },
+  current: { len: 2, start: '2026-01-05', end: '2026-01-06' },
+});
+// A zero on the final day must not break the streak: today is not over yet.
+assert.deepEqual(computeStreaks(mk([1, 1, 1, 0])).current,
+  { len: 3, start: '2026-01-01', end: '2026-01-03' },
+  'trailing zero is skipped, not counted as a miss');
+// Two zeros does end it.
+assert.equal(computeStreaks(mk([1, 1, 0, 0])).current.len, 0,
+  'a full missed day ends the streak');
+assert.deepEqual(computeStreaks(mk([0, 0, 0])),
+  { total: 0, longest: { len: 0, start: null, end: null },
+    current: { len: 0, start: null, end: null } },
+  'all-zero series yields zero streaks');
+assert.equal(computeStreaks(mk(new Array(10).fill(2))).current.len, 10, 'unbroken run');
+assert.equal(computeStreaks([]).total, 0, 'empty series is safe');
+// The longest streak must be the first of equal-length runs, not the last.
+assert.equal(computeStreaks(mk([1, 1, 0, 1, 1])).longest.start, '2026-01-01');
+
+// ======================================================================
+// calendar
+// ======================================================================
+const calSvg = calendarTile(year, theme, { title: 'GRID' });
+assert.ok(calSvg.startsWith('<svg'), 'calendar renders an SVG');
+assert.ok(!/NaN|Infinity|undefined/.test(calSvg), 'calendar output is clean');
+// 365 days is 53 week columns; every dated cell must be drawn.
+assert.equal(calSvg.match(/<rect [^>]*rx="2"/g).length, 365, 'one cell per day');
+assert.ok(calSvg.includes('53 WEEKS'));
+assert.ok(calendarTile([], theme, {}).includes('NO CONTRIBUTION DATA'));
+assert.ok(!calendarTile(year, theme, { labels: 'false' }).includes('MON'), 'labels=false');
+// Shade levels must be quantile-based, so a huge peak cannot flatten the rest.
+const lvSmall = levelsFor(mk([1, 2, 3, 4]), 5);
+const lvHuge = levelsFor(mk([1, 2, 3, 400]), 5);
+assert.equal(lvSmall(0), 0, 'zero is always level 0');
+assert.ok(lvSmall(4) > lvSmall(1), 'higher counts shade darker');
+assert.ok(lvHuge(2) > 0, 'a 300x outlier must not flatten ordinary days to zero');
+assert.equal(levelsFor(mk([0, 0]), 5)(0), 0, 'all-zero series is safe');
+
+// ======================================================================
+// languages + stats
+// ======================================================================
+const profile = {
+  login: 'tester', name: 'Tester', createdAt: '2023-03-05T09:31:17Z',
+  followers: 20, following: 123, publicRepos: 5,
+  repos: [
+    { name: 'a', language: 'JavaScript', stars: 10, forks: 1, fork: false },
+    { name: 'b', language: 'JavaScript', stars: 5, forks: 0, fork: false },
+    { name: 'c', language: 'Dart', stars: 2, forks: 0, fork: false },
+    { name: 'd', language: 'Rust', stars: 99, forks: 9, fork: true },
+    { name: 'e', language: null, stars: 1, forks: 0, fork: false },
+  ],
+};
+
+assert.deepEqual(countLanguages(profile.repos), [
+  { name: 'JavaScript', count: 2 },
+  { name: 'Dart', count: 1 },
+], 'forks and language-less repos are excluded by default');
+assert.equal(countLanguages(profile.repos, { includeForks: true }).length, 3, 'forks=true adds Rust');
+// Equal counts must sort alphabetically, so output is stable across runs.
+assert.deepEqual(
+  countLanguages([
+    { language: 'Zig', fork: false }, { language: 'Ada', fork: false },
+  ]).map((l) => l.name),
+  ['Ada', 'Zig'],
+);
+
+const sum = summarise(profile);
+assert.equal(sum.repos, 4, 'forks excluded; language-less repos still count as repos');
+assert.equal(sum.stars, 18, 'forked repo stars excluded (10+5+2+1)');
+assert.equal(sum.followers, 20);
+assert.ok(sum.years > 3 && sum.years < 10, `account age looks wrong: ${sum.years}`);
+assert.equal(summarise(profile, { includeForks: true }).repos, 5);
+assert.equal(summarise(profile, { includeForks: true }).stars, 117, '18 + the fork\u2019s 99');
+assert.equal(summarise({ login: 'x', repos: [] }).repos, 0, 'empty profile is safe');
+
+for (const [name, fn] of [['languages', languagesTile], ['stats', statsTile]]) {
+  const out = fn(profile, theme, { title: name.toUpperCase() });
+  assert.ok(out.startsWith('<svg') && out.includes('</svg>'), `${name} renders an SVG`);
+  assert.ok(!/NaN|Infinity|undefined/.test(out), `${name} output is clean`);
+}
+assert.ok(languagesTile({ login: 'x', repos: [] }, theme, {}).includes('NO LANGUAGE DATA'));
+assert.ok(statsTile({ login: 'x', repos: [] }, theme, {}).includes('@x'));
+
+// Every tile must survive every theme and the degenerate inputs.
+for (const [key, def] of Object.entries(TILES)) {
+  const data = def.data === 'calendar' ? year : profile;
+  const empty = def.data === 'calendar' ? [] : { login: 'x', repos: [] };
+  for (const name of Object.keys(THEMES)) {
+    const out = def.render(data, resolveTheme({ theme: name }), {});
+    assert.ok(out.startsWith('<svg'), `${key} broke on theme ${name}`);
+    assert.ok(!/NaN|Infinity|undefined/.test(out), `${key} emitted NaN on theme ${name}`);
+  }
+  const out = def.render(empty, theme, {});
+  assert.ok(out.startsWith('<svg'), `${key} broke on empty data`);
+  assert.ok(!/NaN|Infinity|undefined/.test(out), `${key} emitted NaN on empty data`);
+  // An injected title must never escape, on any tile.
+  const evil = def.render(data, theme, { title: '</text><script>alert(1)</script>' });
+  assert.ok(!evil.includes('<script>'), `${key} let a script tag through`);
+}
+
+// ======================================================================
 // Static build config
 // ======================================================================
 // A typo here would otherwise only surface when the nightly Action fails.
@@ -318,8 +432,10 @@ for (const [i, entry] of config.tiles.entries()) {
   assert.ok(file.endsWith('.svg'), `tiles[${i}]: "${file}" should end in .svg`);
   assert.ok(!files.has(file), `tiles[${i}]: duplicate output file "${file}"`);
   files.add(file);
-  // Render it for real, so a bad option combination fails here.
-  const out = TILES[entry.tile].render(year, resolveTheme(entry), entry);
+  // Render it for real, so a bad option combination fails here. The fixture
+  // has to match the tile's declared data source.
+  const fixture = TILES[entry.tile].data === 'calendar' ? year : profile;
+  const out = TILES[entry.tile].render(fixture, resolveTheme(entry), entry);
   assert.ok(out.startsWith('<svg'), `tiles[${i}]: did not render an SVG`);
   assert.ok(!/NaN|Infinity|undefined/.test(out), `tiles[${i}]: rendered NaN/Infinity/undefined`);
 }

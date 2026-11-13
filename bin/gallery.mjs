@@ -50,13 +50,16 @@ ${rows}
 
 function section(key, def, data) {
   const theme = resolveTheme({ theme: 'matrix' });
+  const isSeries = Array.isArray(data);
   const hero = def.render(data, theme, {
     title: `◈ ${key.toUpperCase()} ◈`,
     width: 900,
     height: 300,
   });
 
-  const recent = data.slice(-90);
+  // Series tiles get a shorter window for the variant strips so the previews
+  // stay legible at half width; profile tiles take the same object.
+  const recent = isSeries ? data.slice(-90) : data;
   const themeStrip = Object.keys(THEMES)
     .map((name) => {
       const svg = def.render(recent, resolveTheme({ theme: name }), {
@@ -86,6 +89,7 @@ function section(key, def, data) {
   return `<section id="${esc(key)}">
   <h2>${esc(key)}</h2>
   <p class="summary">${esc(def.summary)}</p>
+  ${def.replaces ? `<p class="replaces">replaces <code>${esc(def.replaces)}</code></p>` : ''}
 
   <div class="hero">${inline(hero)}</div>
 
@@ -124,7 +128,8 @@ section{border-top:1px solid var(--line);padding-top:40px;margin-top:48px}
 h2{color:var(--fg);font-size:25px;margin:0 0 6px}
 h3{color:var(--fg);font-size:14px;letter-spacing:.14em;text-transform:uppercase;
   margin:36px 0 12px;font-weight:600}
-.summary{color:var(--dim);margin:0 0 24px}
+.summary{color:var(--dim);margin:0 0 6px}
+.replaces{color:var(--dim);font-size:12.5px;margin:0 0 22px;opacity:.8}
 .label{color:var(--dim);font-size:13px;margin:16px 0 6px}
 .hero{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
 .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
@@ -143,29 +148,49 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:26px;color:v
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 `;
 
+/** Synthetic profile, so --demo works with no token or network. */
+function demoProfile() {
+  const langs = ['TypeScript', 'JavaScript', 'Rust', 'Python', 'Go', 'CSS'];
+  return {
+    login: 'octocat', name: 'Octocat', createdAt: '2021-04-02T00:00:00Z',
+    followers: 128, following: 42, publicRepos: 24,
+    repos: Array.from({ length: 24 }, (_, i) => ({
+      name: `repo-${i}`,
+      language: langs[i % langs.length],
+      stars: (i * 7) % 23,
+      forks: i % 4,
+      fork: i % 8 === 0,
+    })),
+  };
+}
+
 async function main() {
   const outDir = resolve(flag('out', 'site'));
   const keys = Object.keys(TILES);
 
+  // One fetch per distinct data source, shared by the tiles that declare it.
   // Real data when reachable, synthetic otherwise, so the gallery always
   // builds -- a docs page must not fail because a network call did.
-  let data;
-  let source;
-  if (has('demo')) {
-    data = demoData();
-    source = 'synthetic data';
-  } else {
-    try {
-      data = await FETCHERS.calendar(USER, process.env.GITHUB_TOKEN);
-      source = `live data for @${USER}`;
-    } catch (err) {
-      console.warn(`  ! live fetch failed (${err.message}); using synthetic data`);
-      data = demoData();
-      source = 'synthetic data';
+  const needed = [...new Set(keys.map((k) => TILES[k].data))];
+  const datasets = {};
+  let live = 0;
+  for (const kind of needed) {
+    if (!has('demo')) {
+      try {
+        datasets[kind] = await FETCHERS[kind](USER, process.env.GITHUB_TOKEN);
+        live += 1;
+        continue;
+      } catch (err) {
+        console.warn(`  ! ${kind} fetch failed (${err.message}); using synthetic data`);
+      }
     }
+    datasets[kind] = kind === 'calendar' ? demoData() : demoProfile();
   }
+  const source = live === needed.length
+    ? `live data for @${USER}`
+    : live === 0 ? 'synthetic data' : `partly live data for @${USER}`;
 
-  const sections = keys.map((k) => section(k, TILES[k], data)).join('\n\n');
+  const sections = keys.map((k) => section(k, TILES[k], datasets[TILES[k].data])).join('\n\n');
   const navLinks = keys.map((k) => `<a href="#${esc(k)}">${esc(k)}</a>`).join('\n    ');
 
   // Inline the cover so the page still makes no external requests. Falls back
