@@ -2,7 +2,7 @@
 
 <img src="assets/cover.svg" alt="gitmatrix — self-hosted SVG tiles for GitHub profile READMEs" width="100%" />
 
-### [→ Browse the components](https://abdulsadath77.github.io/gitmatrix/)
+### [Components](https://abdulsadath77.github.io/gitmatrix/) · [Documentation](https://abdulsadath77.github.io/gitmatrix/docs/)
 
 Zero runtime dependencies · no build step · every token customizable
 
@@ -12,20 +12,15 @@ Zero runtime dependencies · no build step · every token customizable
 
 ## Why self-hosted
 
-Most profile-README tile services are a single Vercel project owned by one
-volunteer, serving images for thousands of other people's profiles. That ends
-one way:
+A shared tile service is one person's hosting account answering image requests
+for thousands of other people's profiles. When that account hits its free-tier
+limit the images stop loading everywhere at once, and nobody using them can do
+anything about it.
 
-```
-GET github-readme-activity-graph.vercel.app/graph?username=...
-→ 402 Payment Required / DEPLOYMENT_DISABLED
-```
-
-`402` is Vercel cutting off a maintainer who ran out of free tier. The code was
-fine; the hosting economics were not. gitmatrix is built to be deployed **per
-user**, so you serve only your own profile and stay inside the free tier
-indefinitely. Responses carry `s-maxage`, so Vercel's edge and GitHub's camo
-proxy absorb repeat views without invoking the function at all.
+gitmatrix inverts that. It is deployed **per user**, so you serve only your own
+profile and own the thing your README depends on. The recommended path removes
+the server entirely: a scheduled Action renders the tiles, commits them, and a
+CDN serves static files. Nothing to run out of, nothing to switch off.
 
 ## Quick start
 
@@ -52,7 +47,7 @@ needs to query them.
 Your username and theme never change; only the data does, once a day. So there
 is nothing to render per-request. A scheduled Action renders the SVGs, commits
 them to a `tiles` branch, and a CDN serves them. **No server, no quota, no
-`402` — structurally.**
+a quota to exhaust — structurally.**
 
 Setup — **no secrets required**:
 
@@ -93,10 +88,10 @@ the GraphQL API.
 <img src="https://YOUR-APP.vercel.app/api/activity?username=YOUR_NAME" width="100%" />
 ```
 
-Be aware of what you are signing up for: this is the shape that ended as
-`402` for every service listed at the top of this file. Responses carry
-`s-maxage` to keep invocations low, but if your instance becomes popular you are
-funding other people's profile images.
+Be aware of what you are signing up for: if other people point at your
+instance, you are paying for their profile images and inherit the failure mode
+described above. Responses carry `s-maxage` so repeat views are served from the
+edge without invoking the function, which keeps that manageable.
 
 ### Static build
 
@@ -127,13 +122,13 @@ test.mjs` rather than the nightly build.
 
 ## Components
 
-| Tile | Shows | Data | Replaces |
-|---|---|---|---|
-| [`activity`](#apiactivity) | contributions as a smooth area + line chart | calendar | `github-readme-activity-graph` (402) |
-| [`calendar`](#apicalendar) | the contribution grid, one column per week | calendar | `ghchart.rshah.org` |
-| [`streak`](#apistreak) | total, current streak, longest streak | calendar | `github-readme-streak-stats` |
-| [`languages`](#apilanguages) | language split as a stacked bar | profile | `top-langs` (503) |
-| [`stats`](#apistats) | repos, stars, forks, followers, account age | profile | `github-readme-stats` (503) |
+| Component | Shows | Data |
+|---|---|---|
+| [`activity`](#apiactivity) | contributions as a smooth area + line chart | calendar |
+| [`calendar`](#apicalendar) | the contribution grid, one column per week | calendar |
+| [`streak`](#apistreak) | total, current streak, longest streak | calendar |
+| [`languages`](#apilanguages) | language split as a stacked bar | profile |
+| [`stats`](#apistats) | repos, stars, forks, followers, account age | profile |
 
 Two data sources, both unauthenticated: `calendar` reads the public
 contributions page, `profile` makes two REST calls. Tiles sharing a source
@@ -209,9 +204,9 @@ request per repo or a token; see the note in `lib/tiles/languages.js`.
 |---|---|---|
 | `forks` | boolean, count forks as your own | `false` |
 
-Forks are excluded by default. Including them is why third-party cards disagree
-about repo counts — for this account one says 57 and another 28, because one
-counts all 59 public repos and the other only the 29 originals.
+Forks are excluded by default, so the count reflects your own work. A profile
+with 59 public repos of which 30 are forks reports 29. Pass `forks=true` to
+count everything.
 
 ## Theming
 
@@ -267,11 +262,15 @@ on a spike series with data bounded to `[10, 100]`:
 inside the data range at every smoothing level, so a regression here fails the
 suite rather than quietly shipping a chart that bleeds under its own axis.
 
-## Gallery
+## Site
 
-The public component gallery is generated from the tile registry, so the
-published docs cannot drift from the code — the component list, every options
-table, and every copy-paste snippet are read from `lib/tiles/index.js`.
+Two routes, both generated from the tile registry, so the published docs cannot
+drift from the code:
+
+| Route | Contents |
+|---|---|
+| `/` | component showcase — live previews, theme strips, copy-paste snippets |
+| `/docs/` | reference — delivery, theming, per-component options, adding a component |
 
 ```bash
 node bin/gallery.mjs          # live data for the configured user
@@ -279,11 +278,10 @@ node bin/gallery.mjs --demo   # synthetic data, no network
 node bin/gallery.mjs --out public
 ```
 
-The **Build tiles** workflow publishes it to the `gh-pages` branch. Enable
-Pages on that branch once (Settings → Pages → Source: `gh-pages`) and it stays
-current on every run. Because the page is generated from the registry, a broken
-tile fails the gallery build — so publishing doubles as a check on every
-component.
+The **Build tiles** workflow publishes both to the `gh-pages` branch. Set
+Pages to that branch once (Settings → Pages → Source: `gh-pages` / root) and it
+stays current on every run. Because both pages render every component, a broken
+tile fails the site build — publishing doubles as a check on the whole set.
 
 ## Adding a tile
 
