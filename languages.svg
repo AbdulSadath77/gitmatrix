@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="264"
+    viewBox="0 0 440 264" role="img" aria-label="◈ LANGUAGE DISTRIBUTION ◈">
+  <rect width="440" height="264" rx="6" fill="#0D1117"/>
+  <rect x="0.5" y="0.5" width="439" height="263" rx="6"
+         fill="none" stroke="#00FF41" stroke-opacity="0.25"/><text x="220" y="30" fill="#00FF41" font-size="15" font-weight="600"
+         text-anchor="middle" font-family="monospace">◈ LANGUAGE DISTRIBUTION ◈</text><rect x="24" y="54" width="392" height="12" rx="2"
+        fill="#00FF41" fill-opacity="0.08"/><rect x="24.0" y="54" width="180.9"
+        height="12" fill="#00FF41" fill-opacity="0.950"/><rect x="204.9" y="54" width="75.4"
+        height="12" fill="#00FF41" fill-opacity="0.842"/><rect x="280.3" y="54" width="45.2"
+        height="12" fill="#00FF41" fill-opacity="0.733"/><rect x="325.5" y="54" width="30.2"
+        height="12" fill="#00FF41" fill-opacity="0.625"/><rect x="355.7" y="54" width="30.2"
+        height="12" fill="#00FF41" fill-opacity="0.517"/><rect x="385.8" y="54" width="15.1"
+        height="12" fill="#00FF41" fill-opacity="0.408"/><rect x="400.9" y="54" width="15.1"
+        height="12" fill="#00FF41" fill-opacity="0.300"/><rect x="24" y="84" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.950"/>
+        <text x="41" y="92" fill="#00FF41" font-size="12"
+          font-family="monospace">JavaScript</text>
+        <text x="416" y="92" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">46.2%</text><rect x="24" y="106" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.842"/>
+        <text x="41" y="114" fill="#00FF41" font-size="12"
+          font-family="monospace">HTML</text>
+        <text x="416" y="114" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">19.2%</text><rect x="24" y="128" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.733"/>
+        <text x="41" y="136" fill="#00FF41" font-size="12"
+          font-family="monospace">Dart</text>
+        <text x="416" y="136" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">11.5%</text><rect x="24" y="150" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.625"/>
+        <text x="41" y="158" fill="#00FF41" font-size="12"
+          font-family="monospace">CSS</text>
+        <text x="416" y="158" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">7.7%</text><rect x="24" y="172" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.517"/>
+        <text x="41" y="180" fill="#00FF41" font-size="12"
+          font-family="monospace">Java</text>
+        <text x="416" y="180" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">7.7%</text><rect x="24" y="194" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.408"/>
+        <text x="41" y="202" fill="#00FF41" font-size="12"
+          font-family="monospace">Handlebars</text>
+        <text x="416" y="202" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">3.8%</text><rect x="24" y="216" width="9" height="9" rx="2" fill="#00FF41"
+          fill-opacity="0.300"/>
+        <text x="41" y="224" fill="#00FF41" font-size="12"
+          font-family="monospace">Other</text>
+        <text x="416" y="224" fill="#00FF41" fill-opacity="0.6"
+          font-size="12" text-anchor="end" font-family="monospace">3.8%</text><text x="220" y="252" fill="#00FF41" fill-opacity="0.45"
+         font-size="10" text-anchor="middle" font-family="monospace">7 LANGUAGES / 29 REPOS</text>
+</svg>
