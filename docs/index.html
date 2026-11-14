@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>gitmatrix — documentation</title>
+<meta name="description" content="Reference documentation for gitmatrix: delivery, theming, options and adding a tile.">
+<meta property="og:title" content="gitmatrix — documentation">
+<meta property="og:description" content="Reference documentation for gitmatrix: delivery, theming, options and adding a tile.">
+<style>
+:root{--fg:#00FF41;--bg:#0D1117;--dim:#7d8590;--line:rgba(0,255,65,.18);--panel:#0b0f14}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#E6EDF3;
+  font:15px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px 80px}
+header{border-bottom:1px solid var(--line);padding:40px 0 30px;margin-bottom:8px}
+.cover{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+h1{margin:0;font-size:34px;letter-spacing:-.5px;color:var(--fg)}
+.tag{color:var(--dim);margin:10px 0 0}
+.badges{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{border:1px solid var(--line);color:var(--fg);padding:3px 10px;border-radius:999px;font-size:12px}
+nav{margin:24px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+nav a{color:var(--fg);text-decoration:none;border:1px solid var(--line);
+  padding:5px 12px;border-radius:4px;font-size:13px}
+nav a:hover{background:rgba(0,255,65,.08)}
+nav a.on{background:rgba(0,255,65,.12);border-color:rgba(0,255,65,.45)}
+nav .sep{flex:1}
+section{border-top:1px solid var(--line);padding-top:40px;margin-top:46px}
+section:first-of-type{border-top:0;padding-top:32px;margin-top:0}
+h2{color:var(--fg);font-size:25px;margin:0 0 6px}
+h3{color:var(--fg);font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+  margin:34px 0 12px;font-weight:600}
+h4{color:#E6EDF3;font-size:15px;margin:26px 0 8px}
+.summary{color:var(--dim);margin:0 0 22px}
+.label{color:var(--dim);font-size:13px;margin:16px 0 6px}
+.hero{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+figure{margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+figcaption{color:var(--dim);font-size:12px;padding:8px 12px;border-top:1px solid var(--line)}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:13px 15px;overflow-x:auto;margin:0 0 10px}
+code{color:var(--fg);font-size:13px}
+p code,td code,li code{background:var(--panel);padding:1px 5px;border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 18px}
+th{text-align:left;color:var(--fg);border-bottom:1px solid var(--line);padding:9px 10px;
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+td{border-bottom:1px solid rgba(125,133,144,.14);padding:9px 10px;vertical-align:top}
+td:first-child{white-space:nowrap}
+ul{color:var(--dim);padding-left:20px}
+li{margin:6px 0}
+a{color:var(--fg)}
+footer{border-top:1px solid var(--line);margin-top:54px;padding-top:24px;color:var(--dim);font-size:13px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>documentation</h1>
+  <p class="tag">Delivery, theming, per-component options, and adding a component.</p>
+  <nav>
+    <a href="../">components</a>
+    <a href="./" class="on">docs</a>
+    <span class="sep"></span>
+    <a href="https://github.com/AbdulSadath77/gitmatrix">source →</a>
+  </nav>
+</header>
+<section id="start">
+  <h2>Getting started</h2>
+  <p class="summary">Two ways to serve a tile. Pick by whether anyone other than
+  you needs to request it.</p>
+
+  <h3>Static, from a CDN</h3>
+  <p class="label">Recommended. A scheduled Action renders the tiles, commits
+  them to a <code>tiles</code> branch, and a CDN serves them as static files.
+  No server, no quota, nothing that can be switched off.</p>
+  <pre><code>&lt;img src=&quot;https://cdn.jsdelivr.net/gh/AbdulSadath77/gitmatrix@tiles/activity.svg&quot; width=&quot;100%&quot; /&gt;</code></pre>
+  <ul>
+    <li>Edit <code>gitmatrix.json</code> to list the tiles you want.</li>
+    <li>Run the <strong>Build tiles</strong> workflow.</li>
+    <li>No secrets required.</li>
+  </ul>
+
+  <h3>Rendered on demand</h3>
+  <p class="label">Only needed when you want <code>?username=anyone</code>
+  resolved at request time. Deploy the repo to any Node host; no environment
+  variables are required.</p>
+  <pre><code>&lt;img src=&quot;https://YOUR-APP.vercel.app/api/activity?username=AbdulSadath77&quot; width=&quot;100%&quot; /&gt;</code></pre>
+
+  <h3>Where the data comes from</h3>
+  <ul>
+    <li><code>calendar</code> &mdash; the public contributions page. No token.</li>
+    <li><code>profile</code> &mdash; two unauthenticated REST calls.</li>
+  </ul>
+  <p class="label">Tiles sharing a source share one fetch, so the full set costs
+  2 requests against a 60/hour
+  unauthenticated budget.</p>
+</section>
+
+<section id="theming">
+  <h2>Theming</h2>
+  <p class="summary">Every token is independently overridable, so a preset is a
+  starting point rather than a fixed look.</p>
+  <table><thead><tr><th>preset</th><th>foreground / background</th></tr></thead>
+  <tbody><tr><td><code>matrix</code></td><td><code>#00FF41</code> on <code>#0D1117</code></td></tr>
+<tr><td><code>amber</code></td><td><code>#FFB000</code> on <code>#0D0B06</code></td></tr>
+<tr><td><code>ice</code></td><td><code>#7DF9FF</code> on <code>#06101A</code></td></tr>
+<tr><td><code>dracula</code></td><td><code>#BD93F9</code> on <code>#282A36</code></td></tr>
+<tr><td><code>nord</code></td><td><code>#88C0D0</code> on <code>#2E3440</code></td></tr>
+<tr><td><code>rose</code></td><td><code>#FF5C8A</code> on <code>#17090F</code></td></tr>
+<tr><td><code>mono</code></td><td><code>#E6EDF3</code> on <code>#0D1117</code></td></tr></tbody></table>
+  <h3>Per-token overrides</h3>
+  <table><thead><tr><th>param</th><th>controls</th></tr></thead><tbody>
+    <tr><td><code>color</code></td><td>lines, headings, gridlines</td></tr>
+    <tr><td><code>bg</code></td><td>background</td></tr>
+    <tr><td><code>area</code></td><td>area fill</td></tr>
+    <tr><td><code>border</code></td><td>frame stroke, defaults to <code>color</code></td></tr>
+    <tr><td><code>muted</code></td><td>axis and footer text, defaults to <code>color</code></td></tr>
+  </tbody></table>
+  <pre><code>?theme=nord&amp;color=00FF41&amp;area=003311</code></pre>
+  <p class="label">Colours are 3, 4, 6 or 8 hex digits, with or without
+  <code>#</code>. Anything else falls back to the theme value, so a malformed
+  colour can never reach the output.</p>
+</section>
+
+<section id="resolution">
+  <h2>Resolution and smoothing</h2>
+  <p class="summary">Grouping matters more than smoothing.</p>
+  <p class="label">A year at daily resolution is about 370 points. On an 800px
+  chart that is roughly 2px per point, and no amount of smoothing is visible
+  &mdash; the curve renders as a picket fence. <code>group=week</code> gives
+  ~53 points and <code>group=month</code> ~13, which is where a curve reads as
+  a curve. Weekly is the default.</p>
+  <p class="label">Grouping changes resolution only: the total is preserved
+  exactly, and the test suite asserts that across all three modes.</p>
+  <h3>Smoothing</h3>
+  <p class="label">The curve is a monotone cubic Hermite spline, not
+  Catmull-Rom. Catmull-Rom costs the same to write but overshoots around local
+  extrema, which on contribution data means the curve dips below zero after a
+  spike and the area fill paints under the baseline. Measured on a spike series
+  bounded to <code>[10, 100]</code>:</p>
+  <table><thead><tr><th>method</th><th>rendered y range</th></tr></thead><tbody>
+    <tr><td>monotone cubic</td><td><code>[10.00, 100.00]</code> &mdash; bounded</td></tr>
+    <tr><td>Catmull-Rom</td><td><code>[10.00, 106.65]</code> &mdash; 6.65px past the baseline</td></tr>
+  </tbody></table>
+  <p class="label">The suite samples the emitted B&eacute;zier curves and
+  asserts the path stays inside the data range at every smoothing level.</p>
+</section>
+
+<section id="components-ref">
+  <h2>Components</h2>
+  <p class="summary">Every tile also accepts <code>theme</code>,
+  <code>title</code>, <code>border</code>, <code>radius</code> and
+  <code>width</code>. Out-of-range values clamp to the nearest bound;
+  unparseable values fall back to the default, so a bad query degrades to a
+  working tile rather than an error.</p>
+</section>
+
+<section id="activity">
+  <h2>activity</h2>
+  <p class="summary">Daily, weekly or monthly contributions as a smooth area + line chart</p>
+  <h3>Endpoint</h3>
+  <pre><code>/api/activity?username=AbdulSadath77</code></pre>
+  <h3>Static file</h3>
+  <pre><code>https://cdn.jsdelivr.net/gh/AbdulSadath77/gitmatrix@tiles/activity.svg</code></pre>
+  <h3>Options</h3>
+  <table><thead><tr><th>option</th><th>accepts</th></tr></thead><tbody>
+<tr><td><code>width</code></td><td>px, 320-1600 (default 800)</td></tr>
+<tr><td><code>height</code></td><td>px, 160-800 (default 320)</td></tr>
+<tr><td><code>group</code></td><td>day | week | month — bucket resolution (default week)</td></tr>
+<tr><td><code>smoothing</code></td><td>0-1, 0 = straight segments, 1 = full curve (default 1)</td></tr>
+<tr><td><code>days</code></td><td>trim to the most recent N days, 7-366 (default all)</td></tr>
+<tr><td><code>points</code></td><td>show a dot per data point (default false)</td></tr>
+<tr><td><code>grid</code></td><td>show horizontal reference lines (default true)</td></tr>
+<tr><td><code>dots</code></td><td>radius of point markers, 1-5 (default 2)</td></tr>
+<tr><td><code>fill</code></td><td>draw the area under the line (default true)</td></tr>
+<tr><td><code>border</code></td><td>draw the outer frame (default true)</td></tr>
+<tr><td><code>radius</code></td><td>corner radius, 0-24 (default 6)</td></tr>
+<tr><td><code>title</code></td><td>heading text, up to 80 chars</td></tr>
+</tbody></table>
+</section>
+
+<section id="calendar">
+  <h2>calendar</h2>
+  <p class="summary">The contribution grid, one column per week</p>
+  <h3>Endpoint</h3>
+  <pre><code>/api/calendar?username=AbdulSadath77</code></pre>
+  <h3>Static file</h3>
+  <pre><code>https://cdn.jsdelivr.net/gh/AbdulSadath77/gitmatrix@tiles/calendar.svg</code></pre>
+  <h3>Options</h3>
+  <table><thead><tr><th>option</th><th>accepts</th></tr></thead><tbody>
+<tr><td><code>cell</code></td><td>px square size, 6-20 (default 11)</td></tr>
+<tr><td><code>gap</code></td><td>px between cells, 1-6 (default 3)</td></tr>
+<tr><td><code>levels</code></td><td>shade steps, 3-6 (default 5)</td></tr>
+<tr><td><code>labels</code></td><td>show month and weekday labels (default true)</td></tr>
+<tr><td><code>border</code></td><td>draw the outer frame (default true)</td></tr>
+<tr><td><code>radius</code></td><td>corner radius, 0-24 (default 6)</td></tr>
+<tr><td><code>title</code></td><td>heading text, up to 80 chars</td></tr>
+</tbody></table>
+</section>
+
+<section id="streak">
+  <h2>streak</h2>
+  <p class="summary">Total contributions, current streak and longest streak</p>
+  <h3>Endpoint</h3>
+  <pre><code>/api/streak?username=AbdulSadath77</code></pre>
+  <h3>Static file</h3>
+  <pre><code>https://cdn.jsdelivr.net/gh/AbdulSadath77/gitmatrix@tiles/streak.svg</code></pre>
+  <h3>Options</h3>
+  <table><thead><tr><th>option</th><th>accepts</th></tr></thead><tbody>
+<tr><td><code>width</code></td><td>px, 320-1600 (default 760)</td></tr>
+<tr><td><code>height</code></td><td>px, 160-800 (default 240)</td></tr>
+<tr><td><code>border</code></td><td>draw the outer frame (default true)</td></tr>
+<tr><td><code>radius</code></td><td>corner radius, 0-24 (default 6)</td></tr>
+<tr><td><code>title</code></td><td>heading text, up to 80 chars</td></tr>
+</tbody></table>
+</section>
+
+<section id="languages">
+  <h2>languages</h2>
+  <p class="summary">Language split across public repositories, as a stacked bar</p>
+  <h3>Endpoint</h3>
+  <pre><code>/api/languages?username=AbdulSadath77</code></pre>
+  <h3>Static file</h3>
+  <pre><code>https://cdn.jsdelivr.net/gh/AbdulSadath77/gitmatrix@tiles/languages.svg</code></pre>
+  <h3>Options</h3>
+  <table><thead><tr><th>option</th><th>accepts</th></tr></thead><tbody>
+<tr><td><code>width</code></td><td>px, 320-1600 (default 460)</td></tr>
+<tr><td><code>top</code></td><td>how many languages to list, 3-12 (default 6)</td></tr>
+<tr><td><code>forks</code></td><td>include forked repos (default false)</td></tr>
+<tr><td><code>border</code></td><td>draw the outer frame (default true)</td></tr>
+<tr><td><code>radius</code></td><td>corner radius, 0-24 (default 6)</td></tr>
+<tr><td><code>title</code></td><td>heading text, up to 80 chars</td></tr>
+</tbody></table>
+</section>
+
+<section id="stats">
+  <h2>stats</h2>
+  <p class="summary">Repositories, stars, forks, followers and account age</p>
+  <h3>Endpoint</h3>
+  <pre><code>/api/stats?username=AbdulSadath77</code></pre>
+  <h3>Static file</h3>
+  <pre><code>https://cdn.jsdelivr.net/gh/AbdulSadath77/gitmatrix@tiles/stats.svg</code></pre>
+  <h3>Options</h3>
+  <table><thead><tr><th>option</th><th>accepts</th></tr></thead><tbody>
+<tr><td><code>width</code></td><td>px, 320-1600 (default 460)</td></tr>
+<tr><td><code>forks</code></td><td>count forked repos as your own (default false)</td></tr>
+<tr><td><code>border</code></td><td>draw the outer frame (default true)</td></tr>
+<tr><td><code>radius</code></td><td>corner radius, 0-24 (default 6)</td></tr>
+<tr><td><code>title</code></td><td>heading text, up to 80 chars</td></tr>
+</tbody></table>
+</section>
+
+<section id="adding">
+  <h2>Adding a component</h2>
+  <p class="summary">Three steps. No routing changes &mdash; the API route, the
+  static build and both pages of this site all read the registry.</p>
+  <h4>1. A data source, if nothing else provides it</h4>
+  <pre><code>// lib/github.js
+export const FETCHERS = {
+  async mySource(login, token) { /* ... */ },
+};</code></pre>
+  <h4>2. The tile</h4>
+  <pre><code>// lib/tiles/mytile.js
+export const options = { width: 'px, 320-1600 (default 800)' };
+
+export function render(data, theme, q) {
+  return tile({ /* ... */ });
+}</code></pre>
+  <p class="label"><code>render</code> must be pure &mdash; data in, string out,
+  no IO. That is what lets the suite test every component without a token or a
+  network.</p>
+  <h4>3. The registry</h4>
+  <pre><code>// lib/tiles/index.js
+export const TILES = {
+  mytile: {
+    slug: 'mytile',
+    summary: 'What it shows',
+    data: 'mySource',
+    options: mytile.options,
+    render: mytile.render,
+  },
+};</code></pre>
+  <p class="label">The suite then checks it automatically: the slug matches its
+  key, <code>render</code> is a function, the declared data source has a
+  fetcher, options are documented, and the tile renders across all
+  7 themes, on empty data, and with an injected
+  title.</p>
+</section>
+<footer><a href="https://github.com/AbdulSadath77/gitmatrix">AbdulSadath77/gitmatrix</a> · MIT</footer>
+</div>
+</body>
+</html>
