@@ -25,13 +25,27 @@ jobs:
       # No install step: gitmatrix has no runtime dependencies.
       - run: node test.mjs
 
+      # Start from what is already published, so a tile whose data source is
+      # unreachable this run keeps serving its last good render instead of
+      # being dropped by the force-push below. Empty on the first ever run.
+      - name: Seed dist from the published tiles
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          if git fetch -q --depth=1 origin tiles 2>/dev/null; then
+            # git archive, not `checkout --work-tree`: extracting a tree must
+            # not touch this repo's index.
+            git archive origin/tiles | tar -x -C dist
+            ls -1 dist | sed 's/^/  carried over: /'
+          else
+            echo "  no tiles branch yet -- first run"
+          fi
+
+      # No token, by design: `calendar` reads the public contributions page and
+      # `profile` uses public REST. REST is 60/hr per runner IP and that budget
+      # is shared, so a profile tile can miss a run -- it then keeps the render
+      # seeded above rather than failing the build.
       - name: Render tiles
-        # No token needed: the public /users/<login>/contributions endpoint is
-        # read instead, which is the same source Platane/snk uses. Set a
-        # TILES_TOKEN secret only if you would rather go through the GraphQL
-        # API, which cannot be reshaped by a GitHub frontend change.
-        env:
-          GITHUB_TOKEN: ${{ secrets.TILES_TOKEN }}
         run: node bin/build.mjs
 
       - name: Publish dist to the tiles branch
@@ -53,8 +67,6 @@ jobs:
       # Generated from the tile registry, so this failing means a tile is
       # broken -- the gallery build doubles as a check on every component.
       - name: Build gallery
-        env:
-          GITHUB_TOKEN: ${{ secrets.TILES_TOKEN }}
         run: node bin/gallery.mjs
 
       - name: Publish gallery to gh-pages

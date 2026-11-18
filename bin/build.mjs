@@ -11,6 +11,7 @@
 //   node bin/build.mjs --demo           # synthetic data, no token needed
 //   node bin/build.mjs --out public
 
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { FETCHERS } from '../lib/github.js';
@@ -60,20 +61,23 @@ async function main() {
     process.exit(1);
   }
 
-  // Optional. Without it the public HTML calendar is parsed instead, so this
-  // runs in CI with no secrets configured.
+  // Optional, and unset in CI by design. Both sources are public: `calendar`
+  // reads the contributions page, `profile` uses unauthenticated REST.
   const token = process.env.GITHUB_TOKEN;
 
-  // Tiles sharing a data source share one fetch.
+  // Tiles sharing a data source share one fetch -- the promise is cached, so a
+  // failing source costs one attempt rather than one per tile that uses it.
+  // That matters against a 60/hr budget shared with every other runner.
   const cache = new Map();
-  const load = async (kind) => {
+  const load = (kind) => {
     if (!cache.has(kind)) {
-      cache.set(kind, demo ? demoData() : await FETCHERS[kind](username, token));
+      cache.set(kind, demo ? Promise.resolve(demoData()) : FETCHERS[kind](username, token));
     }
     return cache.get(kind);
   };
 
   let written = 0;
+  let kept = 0;
   for (const [i, entry] of entries.entries()) {
     const def = TILES[String(entry.tile ?? '').toLowerCase()];
     if (!def) {
@@ -83,7 +87,24 @@ async function main() {
     const file = entry.file ?? `${def.slug}.svg`;
     const target = join(outDir, file);
 
-    const svg = def.render(await load(def.data), resolveTheme(entry), entry);
+    let data;
+    try {
+      data = await load(def.data);
+    } catch (err) {
+      // An existing file here was seeded from the last publish, so a tile
+      // whose source is briefly unreachable keeps serving a slightly stale
+      // render. Without one there is nothing to serve, and a missing file
+      // would mean a broken image in someone's README -- so that still fails.
+      if (!existsSync(target)) {
+        console.error(`${def.slug}: ${err.message}`);
+        process.exit(1);
+      }
+      console.warn(`  ${file.padEnd(28)} ${'kept'.padStart(7)}       (${def.slug}: ${err.message})`);
+      kept++;
+      continue;
+    }
+
+    const svg = def.render(data, resolveTheme(entry), entry);
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, svg, 'utf8');
 
@@ -91,7 +112,8 @@ async function main() {
     written++;
   }
 
-  console.log(`\nwrote ${written} tile${written === 1 ? '' : 's'} to ${outDir}${demo ? ' [demo data]' : ''}`);
+  const summary = kept ? `wrote ${written}, kept ${kept}` : `wrote ${written} tile${written === 1 ? '' : 's'}`;
+  console.log(`\n${summary} to ${outDir}${demo ? ' [demo data]' : ''}`);
 }
 
 main().catch((err) => {

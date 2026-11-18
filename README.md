@@ -54,9 +54,14 @@ Setup — **no secrets required**:
 
 Contribution data comes from the public `github.com/users/<login>/contributions`
 endpoint, the same source `Platane/snk` reads — which is why a snake workflow
-runs with nothing configured. Set a `TILES_TOKEN` secret only if you would
-rather go through the GraphQL API, which cannot be reshaped by a GitHub
-frontend change.
+runs with nothing configured.
+
+The workflow configures no token at all. The cost is that `profile` tiles go
+through unauthenticated REST, whose 60/hr budget belongs to the runner's shared
+IP and is sometimes already spent. So each run starts from the tiles already
+published and only overwrites what it could fetch: a tile that misses a run
+keeps its last good render and the build stays green, rather than dropping the
+file and leaving a broken image in your README.
 
 Then embed from whichever CDN you prefer. All three serve `image/svg+xml`
 correctly (measured):
@@ -128,10 +133,13 @@ test.mjs` rather than the nightly build.
 | [`languages`](#apilanguages) | language split as a stacked bar | profile |
 | [`stats`](#apistats) | repos, stars, forks, followers, account age | profile |
 
-Two data sources, both unauthenticated: `calendar` reads the public
-contributions page, `profile` makes two REST calls. Tiles sharing a source
-share one fetch, so the full set above costs three requests against a 60/hr
-unauthenticated budget.
+Two data sources, both unauthenticated. Tiles sharing a source share one fetch,
+so adding more tiles costs no extra requests:
+
+| Source | Requests | Counts against |
+|---|---|---|
+| `calendar` | 1 HTML fetch of the contributions page | nothing — not an API endpoint |
+| `profile` | 1 user call + up to 3 repo pages | the 60/hr REST budget for the whole IP |
 
 Every tile also accepts `theme`, `color`, `bg`, `area`, `border`, `muted`,
 `title`, `border`, `radius` and `width`. Out-of-range values clamp; unparseable

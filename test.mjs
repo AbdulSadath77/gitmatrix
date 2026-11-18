@@ -309,6 +309,52 @@ assert.deepEqual(partial, [
 ]);
 
 // ======================================================================
+// Calendar source selection
+// ======================================================================
+// A token is set for its rate limit -- the profile tiles use REST, and
+// unauthenticated REST is 60/hr per IP. But CI's built-in GITHUB_TOKEN is a
+// repo-scoped App installation token that cannot always read another user's
+// contributionsCollection, so GraphQL refusing must drop to the token-free
+// page rather than break the tiles that need no token at all.
+const realFetch = globalThis.fetch;
+const realWarn = console.warn;
+const calls = [];
+const stubFetch = (graphqlBody) => (url) => {
+  calls.push(String(url));
+  const body = String(url).includes('/graphql') ? graphqlBody : FIXTURE;
+  return Promise.resolve(new Response(body, { status: 200 }));
+};
+
+try {
+  console.warn = () => {};
+
+  globalThis.fetch = stubFetch(JSON.stringify({
+    errors: [{ message: 'Resource not accessible by integration' }],
+  }));
+  assert.deepEqual(await FETCHERS.calendar('octocat', 'ghs_repo_scoped'), parsed,
+    'a token that cannot run the query must fall back to the public calendar');
+  assert.ok(calls.some((u) => u.includes('/graphql')), 'GraphQL must be tried first');
+  assert.ok(calls.some((u) => u.includes('/users/octocat/contributions')),
+    'fallback must read the public contributions page');
+
+  // A missing user is a real error. Falling back would hide a typo'd username
+  // behind a second request that fails for an unrelated-looking reason.
+  globalThis.fetch = stubFetch(JSON.stringify({ data: { user: null } }));
+  await assert.rejects(() => FETCHERS.calendar('nope', 'ghs_repo_scoped'),
+    /no such user/, 'a missing user must not fall back');
+
+  // No token: the public page is the only path, with no GraphQL attempt.
+  calls.length = 0;
+  globalThis.fetch = stubFetch('{}');
+  assert.deepEqual(await FETCHERS.calendar('octocat'), parsed);
+  assert.ok(!calls.some((u) => u.includes('/graphql')),
+    'no token must not attempt GraphQL');
+} finally {
+  globalThis.fetch = realFetch;
+  console.warn = realWarn;
+}
+
+// ======================================================================
 // streak
 // ======================================================================
 const mk = (counts, from = '2026-01-01') => counts.map((count, i) => ({

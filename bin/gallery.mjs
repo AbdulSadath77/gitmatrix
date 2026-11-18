@@ -284,7 +284,7 @@ async function main() {
   <ul>
     <li>Edit <code>gitmatrix.json</code> to list the tiles you want.</li>
     <li>Run the <strong>Build tiles</strong> workflow.</li>
-    <li>No secrets required.</li>
+    <li>No secrets required &mdash; the workflow configures no token at all.</li>
   </ul>
 
   <h3>Rendered on demand</h3>
@@ -295,12 +295,17 @@ async function main() {
 
   <h3>Where the data comes from</h3>
   <ul>
-    <li><code>calendar</code> &mdash; the public contributions page. No token.</li>
-    <li><code>profile</code> &mdash; two unauthenticated REST calls.</li>
+    <li><code>calendar</code> &mdash; the public contributions page. Not an API
+    endpoint, so it counts against no budget.</li>
+    <li><code>profile</code> &mdash; unauthenticated REST: one user call plus up
+    to three repo pages, against a 60/hour budget shared by the whole runner IP.</li>
   </ul>
-  <p class="label">Tiles sharing a source share one fetch, so the full set costs
-  ${needed.length} request${needed.length === 1 ? '' : 's'} against a 60/hour
-  unauthenticated budget.</p>
+  <p class="label">Tiles sharing a source share one fetch, so adding tiles costs
+  no extra requests &mdash; ${needed.length} source${needed.length === 1 ? '' : 's'}
+  for every tile listed here. Each run starts from the tiles already published
+  and overwrites only what it could fetch, so a <code>profile</code> tile that
+  loses the rate-limit lottery keeps its last good render instead of
+  disappearing.</p>
 </section>
 
 <section id="theming">
