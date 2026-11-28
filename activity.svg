@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="320"
+    viewBox="0 0 900 320" role="img" aria-label="◈ COMMIT FREQUENCY OVER TIME ◈">
+  <rect width="900" height="320" rx="6" fill="#0D1117"/>
+  <rect x="0.5" y="0.5" width="899" height="319" rx="6"
+         fill="none" stroke="#00FF41" stroke-opacity="0.25"/><text x="450" y="30" fill="#00FF41" font-size="15" font-weight="600"
+         text-anchor="middle" font-family="monospace">◈ COMMIT FREQUENCY OVER TIME ◈</text><line x1="44" y1="272.0" x2="876" y2="272.0"
+                    stroke="#00FF41" stroke-opacity="0.12" stroke-width="1"/>
+                  <text x="36" y="272.0" fill="#00FF41" fill-opacity="0.5"
+                    font-size="10" text-anchor="end" dominant-baseline="middle"
+                    font-family="monospace">0</text><line x1="44" y1="216.1" x2="876" y2="216.1"
+                    stroke="#00FF41" stroke-opacity="0.12" stroke-width="1"/>
+                  <text x="36" y="216.1" fill="#00FF41" fill-opacity="0.5"
+                    font-size="10" text-anchor="end" dominant-baseline="middle"
+                    font-family="monospace">15</text><line x1="44" y1="164.0" x2="876" y2="164.0"
+                    stroke="#00FF41" stroke-opacity="0.12" stroke-width="1"/>
+                  <text x="36" y="164.0" fill="#00FF41" fill-opacity="0.5"
+                    font-size="10" text-anchor="end" dominant-baseline="middle"
+                    font-family="monospace">29</text><line x1="44" y1="108.1" x2="876" y2="108.1"
+                    stroke="#00FF41" stroke-opacity="0.12" stroke-width="1"/>
+                  <text x="36" y="108.1" fill="#00FF41" fill-opacity="0.5"
+                    font-size="10" text-anchor="end" dominant-baseline="middle"
+                    font-family="monospace">44</text><line x1="44" y1="56.0" x2="876" y2="56.0"
+                    stroke="#00FF41" stroke-opacity="0.12" stroke-width="1"/>
+                  <text x="36" y="56.0" fill="#00FF41" fill-opacity="0.5"
+                    font-size="10" text-anchor="end" dominant-baseline="middle"
+                    font-family="monospace">58</text><text x="44.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">NOV</text><text x="76.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">DEC</text><text x="140.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">JAN</text><text x="204.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">FEB</text><text x="268.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">MAR</text><text x="348.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">APR</text><text x="412.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">MAY</text><text x="492.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">JUN</text><text x="556.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">JUL</text><text x="620.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">AUG</text><text x="700.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">SEP</text><text x="764.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">OCT</text><text x="828.0" y="290" fill="#00FF41"
+                fill-opacity="0.55" font-size="10" text-anchor="middle"
+                font-family="monospace">NOV</text><path d="M44,231 C49.3,232.3 54.7,234.8 60,234.8 C65.3,234.8 70.7,227.9 76,216.1 C81.3,204.3 86.7,164 92,164 C97.3,164 102.7,193.8 108,193.8 C113.3,193.8 118.7,190.1 124,178.9 C129.3,167.7 134.7,126.8 140,126.8 C145.3,126.8 150.7,126.8 156,130.5 C161.3,134.2 166.7,194.9 172,205 C177.3,215 182.7,211.3 188,216.1 C193.3,221 198.7,245.9 204,245.9 C209.3,245.9 214.7,184.5 220,160.3 C225.3,136.1 230.7,118.1 236,100.7 C241.3,83.3 246.7,56 252,56 C257.3,56 262.7,183 268,205 C273.3,226.9 278.7,223 284,227.3 C289.3,231.6 294.7,232.9 300,238.5 C305.3,244.1 310.7,260.8 316,260.8 C321.3,260.8 326.7,164 332,164 C337.3,164 342.7,249.7 348,260.8 C353.3,272 358.7,272 364,272 C369.3,272 374.7,231 380,231 C385.3,231 390.7,268.3 396,268.3 C401.3,268.3 406.7,201.2 412,201.2 C417.3,201.2 422.7,201.2 428,201.2 C433.3,201.2 438.7,152.8 444,152.8 C449.3,152.8 454.7,205 460,205 C465.3,205 470.7,182.6 476,182.6 C481.3,182.6 486.7,217.4 492,227.3 C497.3,237.2 502.7,242.2 508,242.2 C513.3,242.2 518.7,231 524,231 C529.3,231 534.7,250.3 540,257.1 C545.3,263.9 550.7,272 556,272 C561.3,272 566.7,257.1 572,257.1 C577.3,257.1 582.7,268.3 588,268.3 C593.3,268.3 598.7,264.6 604,264.6 C609.3,264.6 614.7,272 620,272 C625.3,272 630.7,272 636,272 C641.3,272 646.7,272 652,272 C657.3,272 662.7,272 668,272 C673.3,272 678.7,272 684,272 C689.3,272 694.7,272 700,272 C705.3,272 710.7,272 716,272 C721.3,272 726.7,272 732,264.6 C737.3,257.1 742.7,208.7 748,208.7 C753.3,208.7 758.7,272 764,272 C769.3,272 774.7,234.8 780,223.6 C785.3,212.4 790.7,205 796,205 C801.3,205 806.7,227.3 812,227.3 C817.3,227.3 822.7,180.8 828,167.7 C833.3,154.7 838.7,149.1 844,149.1 C849.3,149.1 854.7,212.4 860,212.4 C865.3,212.4 870.7,202.5 876,197.5 L876,272 L44,272 Z"
+         fill="#003311" fill-opacity="0.85"/>
+      <path d="M44,231 C49.3,232.3 54.7,234.8 60,234.8 C65.3,234.8 70.7,227.9 76,216.1 C81.3,204.3 86.7,164 92,164 C97.3,164 102.7,193.8 108,193.8 C113.3,193.8 118.7,190.1 124,178.9 C129.3,167.7 134.7,126.8 140,126.8 C145.3,126.8 150.7,126.8 156,130.5 C161.3,134.2 166.7,194.9 172,205 C177.3,215 182.7,211.3 188,216.1 C193.3,221 198.7,245.9 204,245.9 C209.3,245.9 214.7,184.5 220,160.3 C225.3,136.1 230.7,118.1 236,100.7 C241.3,83.3 246.7,56 252,56 C257.3,56 262.7,183 268,205 C273.3,226.9 278.7,223 284,227.3 C289.3,231.6 294.7,232.9 300,238.5 C305.3,244.1 310.7,260.8 316,260.8 C321.3,260.8 326.7,164 332,164 C337.3,164 342.7,249.7 348,260.8 C353.3,272 358.7,272 364,272 C369.3,272 374.7,231 380,231 C385.3,231 390.7,268.3 396,268.3 C401.3,268.3 406.7,201.2 412,201.2 C417.3,201.2 422.7,201.2 428,201.2 C433.3,201.2 438.7,152.8 444,152.8 C449.3,152.8 454.7,205 460,205 C465.3,205 470.7,182.6 476,182.6 C481.3,182.6 486.7,217.4 492,227.3 C497.3,237.2 502.7,242.2 508,242.2 C513.3,242.2 518.7,231 524,231 C529.3,231 534.7,250.3 540,257.1 C545.3,263.9 550.7,272 556,272 C561.3,272 566.7,257.1 572,257.1 C577.3,257.1 582.7,268.3 588,268.3 C593.3,268.3 598.7,264.6 604,264.6 C609.3,264.6 614.7,272 620,272 C625.3,272 630.7,272 636,272 C641.3,272 646.7,272 652,272 C657.3,272 662.7,272 668,272 C673.3,272 678.7,272 684,272 C689.3,272 694.7,272 700,272 C705.3,272 710.7,272 716,272 C721.3,272 726.7,272 732,264.6 C737.3,257.1 742.7,208.7 748,208.7 C753.3,208.7 758.7,272 764,272 C769.3,272 774.7,234.8 780,223.6 C785.3,212.4 790.7,205 796,205 C801.3,205 806.7,227.3 812,227.3 C817.3,227.3 822.7,180.8 828,167.7 C833.3,154.7 838.7,149.1 844,149.1 C849.3,149.1 854.7,212.4 860,212.4 C865.3,212.4 870.7,202.5 876,197.5" fill="none" stroke="#00FF41" stroke-width="2"
+        stroke-linejoin="round" stroke-linecap="round"/><text x="450" y="308" fill="#00FF41" fill-opacity="0.45"
+         font-size="10" text-anchor="middle" font-family="monospace">761 CONTRIBUTIONS / PEAK 58 / 53 WEEKS</text>
+</svg>
